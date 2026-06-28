@@ -3,6 +3,9 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# Arquivos pessoais
+Duvidas.md
+
 # dotenv files
 .env
 
