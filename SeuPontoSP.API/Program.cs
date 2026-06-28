@@ -14,28 +14,25 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+var apikey = builder.Configuration["SPTrans:ApiKey"];
 
-app.MapGet("/weatherforecast", () =>
+app.MapGet("/test-auth", async () =>
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var handler = new HttpClientHandler 
+    {
+        CookieContainer = new System.Net.CookieContainer(),
+        UseCookies = true    
+    };
+    string url = $"https://api.olhovivo.sptrans.com.br/v2.1/Login/Autenticar?token={apikey}";
+
+    var client = new HttpClient(handler);
+    var response = await client.PostAsync(url, new StringContent(""));
+    var content = await response.Content.ReadAsStringAsync();
+
+    return Results.Ok(new { status = response.StatusCode, body = content });
+   
+
 })
-.WithName("GetWeatherForecast");
+.WithName("MeuPontoSP");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
