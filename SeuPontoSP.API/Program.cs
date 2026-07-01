@@ -26,11 +26,22 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/test-auth", async (ISPTransService service) =>
+app.MapGet("/health", async (ISPTransService service) =>
 {
-    var result = await service.AuthenticateAsync();
-    return Results.Ok(result);
-})
-.WithName("TestAuth");
+    var authenticated = await service.AuthenticateAsync();
+
+    return authenticated
+        ? Results.Ok(new { status = "healthy", sptrans = "online" })
+        : Results.Json(new { status = "unhealthy", sptrans = "offline" }, statusCode: 503);
+}).
+WithName("HealthCheck");
+
+app.MapGet("/bus-stops/search", async (string searchTerm, ISPTransService service) =>
+{
+    var busStops = await service.SearchBusStopAsync(searchTerm);
+    return Results.Ok(busStops);
+
+}).
+WithName("SearchBusStops");
 
 app.Run();
